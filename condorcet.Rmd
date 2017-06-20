@@ -1,0 +1,52 @@
+---
+title: "R Notebook"
+output:
+  word_document: default
+  html_notebook: default
+---
+
+# Condorcet's jury formula
+
+This notebook is a simple example of how to compute the formula in [Condorcet's jury theorem](http://www.statisticalconsultants.co.nz/blog/condorcets-jury-theorem.html) in R. First we define the method. We will use the formula, defined [here](http://demonstrations.wolfram.com/TheoreticalModelCondorcetsJuryTheoremPart1/):
+
+$$
+\sum_{k=\lceil N/2\rceil}^N {N \choose k} p^k(1-p)^{N-k}
+$$
+
+The `condorcet` method implements exactly the above formula
+```{r}
+condorcet <- function(N, p){
+  k <- ceiling(N/2)  
+  return(sum(sapply(k:N, function(k) choose(N, k) * p^k * (1-p)^(N-k))))
+}
+
+```
+
+
+And now our sample data
+
+```{r}
+# generate a sequence from 5 to 100 by 10
+N <- seq(5, 100, 10)
+# the probabilities that the jury is right, we examine two different values of p
+p <- c(0.6, 0.7)
+
+# repeat the same data for two different probability sets
+data <- rbind(N,N)
+row.names(data) <- c("p=0.6", "p=0.7")
+colnames(data) <- N
+data
+```
+
+We apply the method to our data and the result we get are the following
+
+```{r kable}
+results <- data
+# First row for p=0.6
+results[1,] <- sapply(results[1,], function(x) condorcet(x, 0.6))
+# Second row for p=0.7
+results[2,] <- sapply(results[2,], function(x) condorcet(x, 0.7))
+knitr::kable(results)
+```
+
+So even with 25 juries and 70% probability of them being correct, they have _98,3% probability of being the majority_.
